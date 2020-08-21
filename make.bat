@@ -26,7 +26,9 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+%SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% 
+cp %BUILDDIR%\html\.nojekyll %BUILDDIR%\ 
+echo '<meta http-equiv="refresh" content="0; url=./html/index.html" />' > %BUILDDIR%\index.html
 goto end
 
 :help

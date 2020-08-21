@@ -18,3 +18,5 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	cp $(BUILDDIR)/html/.nojekyll $(BUILDDIR)/
+	echo '<meta http-equiv="refresh" content="0; url=./html/index.html" />' > $(BUILDDIR)/index.html
