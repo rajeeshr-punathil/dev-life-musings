@@ -1,1 +1,5 @@
 env/
+source/
+Makefile
+make.bat
+.DS_Store

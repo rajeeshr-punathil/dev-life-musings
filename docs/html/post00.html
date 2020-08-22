@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day 0: Set up a blog using Sphinx and Github Pages</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Dev Life Musings" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="day-0-set-up-a-blog-using-sphinx-and-github-pages">
+<h1>Day 0: Set up a blog using Sphinx and Github Pages<a class="headerlink" href="#day-0-set-up-a-blog-using-sphinx-and-github-pages" title="Permalink to this headline">¶</a></h1>
+<p><em>Date</em> : <strong>21 Aug 2020</strong></p>
+<p><em>Topics</em> : <code class="docutils literal notranslate"><span class="pre">Sphinx</span></code>, <code class="docutils literal notranslate"><span class="pre">Github</span> <span class="pre">pages</span></code></p>
+<p>Let’s start with how I setup this blog to be hosted on github pages. Always loved using  <a class="reference external" href="https://www.sphinx-doc.org">Sphinx</a> and <a class="reference external" href="https://docutils.sourceforge.io/rst.html">reStructuredText (or reST in short)</a> for documentation. Now let’s try it for building a static blog that can be hosted on <a class="reference external" href="https://pages.github.com/">Github Pages</a>.</p>
+<div class="section" id="initiate">
+<h2>1. Initiate<a class="headerlink" href="#initiate" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Create a directory and change into it. (I use the name <code class="docutils literal notranslate"><span class="pre">dlm</span></code>, which is the abbreviation of my blog name. Replace that with anything you like) :</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mkdir -p dlm
+<span class="nb">cd</span> dlm
+</pre></div>
+</div>
+</li>
+<li><p>Initiate an empty git repository :</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git init
+</pre></div>
+</div>
+</li>
+<li><p>Make and activate a python virtual environment :</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3 -m venv env
+<span class="nb">source</span> env/bin/activate
+</pre></div>
+</div>
+</li>
+<li><p>We do not need this virtual environment to be version-controlled.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;env/&quot;</span> &gt; .gitignore
+</pre></div>
+</div>
+</li>
+<li><p>Install Sphinx using <code class="docutils literal notranslate"><span class="pre">pip</span></code> and collect the list of all dependencies into <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code>.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pip install sphinx
+pip freeze &gt; requirements.txt
+</pre></div>
+</div>
+</li>
+<li><p>Create a <code class="docutils literal notranslate"><span class="pre">README.rst</span></code> at the root and add a short description of what this project is about.</p></li>
+<li><p>That’s almost all for the first step. Let’s wind it up with the initial commit.</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git add .
+git commit -m <span class="s2">&quot;Initial commit.&quot;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="build-source">
+<h2>2. Build source<a class="headerlink" href="#build-source" title="Permalink to this headline">¶</a></h2>
+<p>We will separate the source files and generated blog site into two separate branches. Source files will remain in the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch while the generated static files will move into a <code class="docutils literal notranslate"><span class="pre">docs/</span></code> folder of a new branch, <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>. <code class="docutils literal notranslate"><span class="pre">Github</span> <span class="pre">Pages</span></code> can identify these branch and folder names, so keep the names as they are.</p>
+<ol class="arabic">
+<li><p>Generate the project stub:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>sphinx-quickstart
+</pre></div>
+</div>
+</li>
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> and make the following changes in it:</p>
+<blockquote>
+<div><ul>
+<li><p>Change <code class="docutils literal notranslate"><span class="pre">BUILDDIR=build</span></code> into <code class="docutils literal notranslate"><span class="pre">BUILDDIR=docs</span></code>.</p></li>
+<li><p>Add the following lines to the end of the last section, <code class="docutils literal notranslate"><span class="pre">%:</span> <span class="pre">Makefile</span></code> :</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>cp <span class="k">$(</span>BUILDDIR<span class="k">)</span>/html/.nojekyll <span class="k">$(</span>BUILDDIR<span class="k">)</span>/
+<span class="nb">echo</span> <span class="s1">&#39;&lt;meta http-equiv=&quot;refresh&quot; content=&quot;0; url=./html/index.html&quot; /&gt;&#39;</span> &gt; <span class="k">$(</span>BUILDDIR<span class="k">)</span>/index.html
+</pre></div>
+</div>
+</li>
+<li><p>My <code class="docutils literal notranslate"><span class="pre">Makefile</span></code> looks as follows after these changes (Changes are highlighted):</p></li>
+</ul>
+<img alt="_images/Makefile.png" src="_images/Makefile.png" />
+</div></blockquote>
+</li>
+<li><p>Edit the <code class="docutils literal notranslate"><span class="pre">make.bat</span></code> windows script and make changes similiar to above. I am not an expert of windows batch scripts, so leaving it to you.</p></li>
+<li><p>Edit <code class="docutils literal notranslate"><span class="pre">source/conf.py</span></code> to make the following changes:</p>
+<blockquote>
+<div><ul>
+<li><p>Replace relevant uses of words, <code class="docutils literal notranslate"><span class="pre">Documentation</span></code>, and <code class="docutils literal notranslate"><span class="pre">documentation</span></code> with the terms, <code class="docutils literal notranslate"><span class="pre">Blog</span></code> and <code class="docutils literal notranslate"><span class="pre">blog</span></code> respectively.</p></li>
+<li><p>Add the following lines under the <code class="docutils literal notranslate"><span class="pre">Options</span> <span class="pre">for</span> <span class="pre">HTML</span> <span class="pre">Output</span></code> section:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nv">html_title</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<span class="nv">html_short_title</span> <span class="o">=</span> project
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Edit <code class="docutils literal notranslate"><span class="pre">source/index.rst</span></code> to make the following changes:</p>
+<blockquote>
+<div><ul>
+<li><p>Replace relevant uses of words, <code class="docutils literal notranslate"><span class="pre">Documentation</span></code>, and <code class="docutils literal notranslate"><span class="pre">documentation</span></code> with the terms, <code class="docutils literal notranslate"><span class="pre">Blog</span></code> and <code class="docutils literal notranslate"><span class="pre">blog</span></code> respectively.</p></li>
+<li><p>Add the following line at the end of section named, <code class="docutils literal notranslate"><span class="pre">toctree</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>:reversed:
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="generate-and-separate-blog-site">
+<h2>3. Generate and separate blog site<a class="headerlink" href="#generate-and-separate-blog-site" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>It’s time to generate the blog site from our source:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>make html
+</pre></div>
+</div>
+<p>This will generate the site into <code class="docutils literal notranslate"><span class="pre">docs/html</span></code> and an redirecting index file will be created at <code class="docutils literal notranslate"><span class="pre">docs/index.html</span></code> too. The empty file, <code class="docutils literal notranslate"><span class="pre">.nojekyll</span></code> prevents github pages from rendering the site as a Jekyll-based site.</p>
+</li>
+<li><p>Limit <code class="docutils literal notranslate"><span class="pre">master</span></code> branch for source files only.</p>
+<blockquote>
+<div><ul>
+<li><p>Copy/move the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> content to somewhere outside the repository:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mv docs ../latest_docs
+</pre></div>
+</div>
+</li>
+<li><p>Exclude <code class="docutils literal notranslate"><span class="pre">docs/</span></code> from version control:</p>
+<blockquote>
+<div><p>As said earlier, our <code class="docutils literal notranslate"><span class="pre">master</span></code> branch will continue to track source files only. So let’s direct git to ignore changes in docs. For this, edit <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> and add a line, <code class="docutils literal notranslate"><span class="pre">docs/</span></code>. Now our <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> file in the master branch will look like,</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>env/
+docs/
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Add and commit source files:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git add .
+git commit -m <span class="s2">&quot;First commit of source.&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Bring back generated site to a new branch.</p>
+<blockquote>
+<div><ul>
+<li><p>Create a new git branch named, <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git checkout -b gh-pages
+</pre></div>
+</div>
+</li>
+<li><p>Now we are in <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch. Here, we do not want to track any source files. So edit <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code> again to look like :</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>env/
+source/
+Makefile
+make.bat
+</pre></div>
+</div>
+</li>
+<li><p>Copy back the latest contents of <code class="docutils literal notranslate"><span class="pre">docs/</span></code>:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>mv ../latest_docs ./docs
+</pre></div>
+</div>
+</li>
+<li><p>Add and Commit changes in <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git add .
+git commit -m <span class="s2">&quot;First commit of generated blog.&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+</div>
+<div class="section" id="push-to-github-and-get-hosted">
+<h2>4. Push to Github and get hosted<a class="headerlink" href="#push-to-github-and-get-hosted" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Go to Github, login and create a new repository, having the same name as our local repo. You do not need to add README, LICENSE etc to it.</p></li>
+<li><p>Move back to the master branch, if not already in it:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git checkout master
+</pre></div>
+</div>
+</li>
+<li><p>Add the URL of that remote github repo into our local repo’s config:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git remote add origin WRITE_YOUR_REPO_URL_HERE
+</pre></div>
+</div>
+</li>
+<li><p>Push both branches to github:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git push --all origin
+</pre></div>
+</div>
+</li>
+<li><p>Go back to github and visit the new repo’s page. Go to its <code class="docutils literal notranslate"><span class="pre">Settings</span></code> tab, scroll down to find the <code class="docutils literal notranslate"><span class="pre">Github</span> <span class="pre">Pages</span></code> section, choose branch <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> and folder <code class="docutils literal notranslate"><span class="pre">docs</span></code> as source and click the <code class="docutils literal notranslate"><span class="pre">Save</span></code> button.</p></li>
+<li><p>Now you will be greeted with a “Your site is published” alert. Go to the address specified in it and you can see the site up and running.</p></li>
+</ol>
+</div>
+<div class="section" id="add-new-posts">
+<h2>5. Add new posts<a class="headerlink" href="#add-new-posts" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p>Move back to the master branch, if not already in it:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git checkout master
+</pre></div>
+</div>
+</li>
+<li><p>Write your post in <code class="docutils literal notranslate"><span class="pre">reStructuredText</span></code> format and place it in <code class="docutils literal notranslate"><span class="pre">source</span></code> directory of <code class="docutils literal notranslate"><span class="pre">master</span></code> branch.</p></li>
+<li><p>Add the filename of your post (without the <code class="docutils literal notranslate"><span class="pre">.rst</span></code> extension) to the end of <code class="docutils literal notranslate"><span class="pre">toctree</span></code> section of <code class="docutils literal notranslate"><span class="pre">source/index.rst</span></code>.</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code> and check the output by opening the <code class="docutils literal notranslate"><span class="pre">docs/index.html</span></code> file in a browser.</p></li>
+<li><p>Edit your post source and repeat the above step until you get a satisfactory output.</p></li>
+<li><p>Copy/move the <code class="docutils literal notranslate"><span class="pre">docs</span></code> folder to somewhere outside this repository.</p></li>
+<li><p>Add and commit all changes in the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch.</p></li>
+<li><p>Checkout <code class="docutils literal notranslate"><span class="pre">gh-pages</span></code> branch, copy or move back the latest <code class="docutils literal notranslate"><span class="pre">docs</span></code> from the previous step, add and commit changes.</p></li>
+<li><p>Push both branches to github by running <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">push</span> <span class="pre">--all</span> <span class="pre">origin</span></code> command.</p></li>
+<li><p>This updates your site over github pages and publishes the new post.</p></li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Dev Life Musings</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Day 0: Set up a blog using Sphinx and Github Pages</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#initiate">1. Initiate</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#build-source">2. Build source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#generate-and-separate-blog-site">3. Generate and separate blog site</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#push-to-github-and-get-hosted">4. Push to Github and get hosted</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#add-new-posts">5. Add new posts</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Dev Life Musings</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Rajeesh Punathil.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/post00.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
