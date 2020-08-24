@@ -1,0 +1,297 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day 1: Distance in days between Dates in Swift</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Day 0: Set up a blog using Sphinx and Github Pages" href="post00.html" />
+    <link rel="prev" title="Dev Life Musings" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="day-1-distance-in-days-between-dates-in-swift">
+<h1>Day 1: Distance in days between Dates in Swift<a class="headerlink" href="#day-1-distance-in-days-between-dates-in-swift" title="Permalink to this headline">¶</a></h1>
+<p><em>Date</em> : <strong>22 Aug 2020</strong></p>
+<p><em>Topics</em> : <code class="docutils literal notranslate"><span class="pre">Swift</span></code>, <code class="docutils literal notranslate"><span class="pre">macOS</span></code>, <code class="docutils literal notranslate"><span class="pre">iOS</span></code></p>
+<p>Recently, my phone has developed a display issue and I wanted to continue using a couple of my essential apps from the laptop. Unfortunately, there weren’t any desktop or web versions available. At the same time, I have been trying my hands at developing apps for apple ecosystem using Swift. So I thought like, my essential features aren’t a big deal, so why not try porting them to MacOS?</p>
+<p>One of the apps I planned just needs to track a specific habit for now. It will save the date each time the user performs that action. User needs to perform the action at least once everyday, no matter which exact time it is. What matters is the date only. Each time user opens the app, our code needs to compare current date with the date of their previous activity. As long as the user performs the action at least once every day, a streak is maintained. If the distance between the dates of 2 consecutive activities is of more than 1 day, that means that the streak is broken. So in summary, this is all about finding the absolute day-distance between two given dates.</p>
+<div class="section" id="a-short-ode-to-python-before-we-start">
+<h2>A (short) Ode to Python before we start ;)<a class="headerlink" href="#a-short-ode-to-python-before-we-start" title="Permalink to this headline">¶</a></h2>
+<p>If we were using Python, we could store the Dates as <code class="docutils literal notranslate"><span class="pre">date</span></code> objects and finding the distance between two dates would be as simple as follows (Since we are going to discuss Swift, let’s make the function look as much Swift as it can, using function annotation):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;An example implementation using Python&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+<span class="k">def</span> <span class="nf">distance_in_days</span><span class="p">(</span><span class="n">date1</span><span class="p">:</span> <span class="n">date</span><span class="p">,</span> <span class="n">date2</span><span class="p">:</span> <span class="n">date</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span> <span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return absolute distance in days between given dates.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">abs</span><span class="p">((</span><span class="n">date2</span> <span class="o">-</span> <span class="n">date1</span><span class="p">)</span><span class="o">.</span><span class="n">days</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above function can be tested as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">date</span>
+
+ <span class="n">date1</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
+ <span class="n">date2</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
+
+ <span class="k">assert</span> <span class="n">distance_in_days</span><span class="p">(</span><span class="n">date1</span><span class="p">,</span> <span class="n">date2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Calendar went wrong!&quot;</span>
+ <span class="c1"># Both must be same since we are finding the absolute distance.</span>
+ <span class="k">assert</span> <span class="n">distance_in_days</span><span class="p">(</span><span class="n">date2</span><span class="p">,</span> <span class="n">date1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Calendar went wrong!&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="back-to-the-swift-land">
+<h2>Back to the Swift land<a class="headerlink" href="#back-to-the-swift-land" title="Permalink to this headline">¶</a></h2>
+<p>There’s no date-only class in Swift. Swift’s <code class="docutils literal notranslate"><span class="pre">Date</span></code> is more like Python’s <code class="docutils literal notranslate"><span class="pre">datetime</span></code>. An equivalent solution in Swift to the above would be,</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nf">distanceInDays</span><span class="p">(</span><span class="n">from</span> <span class="n">date1</span><span class="p">:</span> <span class="n">Date</span><span class="p">,</span> <span class="n">to</span> <span class="n">date2</span><span class="p">:</span> <span class="n">Date</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Int</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="bp">abs</span><span class="p">(</span><span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span>
+        <span class="p">[.</span><span class="n">day</span><span class="p">],</span> <span class="n">from</span><span class="p">:</span> <span class="n">date1</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="n">date2</span>
+    <span class="p">).</span><span class="n">day</span> <span class="p">??</span> <span class="mi">0</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Since I needed to use this function so often in the app in different modules, I decided to extend the builtin <code class="docutils literal notranslate"><span class="pre">Date</span></code> and make this available everywhere.</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="n">extenstion</span> <span class="n">Date</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">distanceInDays</span><span class="p">(</span><span class="n">from</span> <span class="n">other</span><span class="p">:</span> <span class="n">Date</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Int</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="bp">abs</span><span class="p">(</span><span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span>
+            <span class="p">[.</span><span class="n">day</span><span class="p">],</span> <span class="n">from</span><span class="p">:</span> <span class="kc">self</span><span class="p">,</span> <span class="n">to</span><span class="p">:</span> <span class="n">other</span>
+        <span class="p">).</span><span class="n">day</span> <span class="p">??</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Now let’s test it.</p>
+<div class="section" id="testing-sample-01">
+<span id="test-code-zero"></span><h3>Testing sample 01<a class="headerlink" href="#testing-sample-01" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nv">comp1</span> <span class="p">=</span> <span class="n">DateComponents</span><span class="p">(</span><span class="n">year</span><span class="p">:</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span><span class="p">:</span> <span class="mi">08</span><span class="p">,</span> <span class="n">day</span><span class="p">:</span> <span class="mi">13</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">comp2</span> <span class="p">=</span> <span class="n">DateComponents</span><span class="p">(</span><span class="n">year</span><span class="p">:</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span><span class="p">:</span> <span class="mi">08</span><span class="p">,</span> <span class="n">day</span><span class="p">:</span> <span class="mi">14</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">d1</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">date</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">comp1</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">d2</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">date</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">comp2</span><span class="p">)</span>
+
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Date 1: </span><span class="si">\(</span><span class="n">d1</span><span class="p">!</span><span class="si">)</span><span class="s"> and Date 2: </span><span class="si">\(</span><span class="n">d2</span><span class="p">!</span><span class="si">)</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Distance in days: </span><span class="si">\(</span><span class="n">d1</span><span class="p">!.</span><span class="n">distanceInDays</span><span class="si">(</span><span class="n">from</span><span class="p">:</span> <span class="n">d2</span><span class="p">!</span><span class="si">))</span><span class="s">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output is,</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Date <span class="m">1</span>: <span class="m">2020</span>-08-12 <span class="m">18</span>:30:00 +0000 and Date <span class="m">2</span>: <span class="m">2020</span>-08-13 <span class="m">18</span>:30:00 +0000
+Distance in days: <span class="m">1</span>
+</pre></div>
+</div>
+<p>Now, we think that our solution works fine, but it does not. Since swift doesn’t support Date-only data types as said before, Our app would be storing timestamps of when the user perfomed the activity. That includes time components and timezone also.  Let’s try another example with time components as well.</p>
+</div>
+<div class="section" id="testing-sample-02">
+<span id="test-code-one"></span><h3>Testing sample 02<a class="headerlink" href="#testing-sample-02" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nv">comps1</span> <span class="p">=</span> <span class="n">DateComponents</span><span class="p">(</span><span class="n">year</span><span class="p">:</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span><span class="p">:</span> <span class="mi">08</span><span class="p">,</span> <span class="n">day</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="n">hour</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span> <span class="n">minute</span><span class="p">:</span> <span class="mi">55</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">comps2</span> <span class="p">=</span> <span class="n">DateComponents</span><span class="p">(</span><span class="n">year</span><span class="p">:</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span><span class="p">:</span> <span class="mi">08</span><span class="p">,</span> <span class="n">day</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span> <span class="n">hour</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span> <span class="n">minute</span><span class="p">:</span> <span class="mi">54</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">comps3</span> <span class="p">=</span> <span class="n">DateComponents</span><span class="p">(</span><span class="n">year</span><span class="p">:</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span><span class="p">:</span> <span class="mi">08</span><span class="p">,</span> <span class="n">day</span><span class="p">:</span> <span class="mi">24</span><span class="p">,</span> <span class="n">hour</span><span class="p">:</span> <span class="mi">23</span><span class="p">,</span> <span class="n">minute</span><span class="p">:</span> <span class="mi">53</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">date1</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">date</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">comps1</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">date2</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">date</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">comps2</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">date3</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">date</span><span class="p">(</span><span class="n">from</span><span class="p">:</span> <span class="n">comps3</span><span class="p">)</span>
+
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Date 1: </span><span class="si">\(</span><span class="n">date1</span><span class="p">!</span><span class="si">)</span><span class="s"> and Date 2: </span><span class="si">\(</span><span class="n">date2</span><span class="p">!</span><span class="si">)</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Distance in days: </span><span class="si">\(</span><span class="n">date1</span><span class="p">!.</span><span class="n">distanceInDays</span><span class="si">(</span><span class="n">from</span><span class="p">:</span> <span class="n">date2</span><span class="p">!</span><span class="si">))</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="bp">print</span><span class="p">()</span>
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Date 2: </span><span class="si">\(</span><span class="n">date2</span><span class="p">!</span><span class="si">)</span><span class="s"> and Date 3: </span><span class="si">\(</span><span class="n">date3</span><span class="p">!</span><span class="si">)</span><span class="s">&quot;</span><span class="p">)</span>
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Distance in days: </span><span class="si">\(</span><span class="n">date2</span><span class="p">!.</span><span class="n">distanceInDays</span><span class="si">(</span><span class="n">from</span><span class="p">:</span> <span class="n">date3</span><span class="p">!</span><span class="si">))</span><span class="s">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Date1 is on Aug 21 and Date2 is on Aug 23. So we expect the distance between them to be 2 days. And distance between Date2 (Aug23) and Date3 (Aug 24) must be 1 day. Let’s check the otput:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Date <span class="m">1</span>: <span class="m">2020</span>-08-21 <span class="m">18</span>:25:00 +0000 and Date <span class="m">2</span>: <span class="m">2020</span>-08-23 <span class="m">18</span>:24:00 +0000
+Distance in days: <span class="m">1</span>
+
+Date <span class="m">2</span>: <span class="m">2020</span>-08-23 <span class="m">18</span>:24:00 +0000 and Date <span class="m">3</span>: <span class="m">2020</span>-08-24 <span class="m">18</span>:23:00 +0000
+Distance in days: <span class="m">0</span>
+</pre></div>
+</div>
+<p>Results are 1 less than what we expected. Why? Because technically, the difference between <code class="docutils literal notranslate"><span class="pre">date1</span></code> and <code class="docutils literal notranslate"><span class="pre">date2</span></code> is less than 2 days (<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">day</span> <span class="pre">23</span> <span class="pre">hours</span> <span class="pre">and</span> <span class="pre">59</span> <span class="pre">minutes</span></code>). Similarly distance between <code class="docutils literal notranslate"><span class="pre">date2</span></code> and <code class="docutils literal notranslate"><span class="pre">date3</span></code> is <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">days</span> <span class="pre">23</span> <span class="pre">hours</span> <span class="pre">and</span> <span class="pre">59</span> <span class="pre">minutes</span></code>, 1 minute short of 1 day. So Swift is just returning the day component of the absolute difference between the given timestamps. To fix this, Our function needs to cancel out the time components of both timestamps before finding the distance. Let’s also cancel out the timezone components as well. Our improved function will look like this:</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">extension</span> <span class="nc">Date</span> <span class="p">{</span>
+    <span class="c1">// Return distance between corresponding days, ignoring the time components.</span>
+    <span class="kd">func</span> <span class="nf">distanceInActualDays</span><span class="p">(</span><span class="n">from</span> <span class="n">other</span><span class="p">:</span> <span class="n">Date</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Int</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nv">tz</span> <span class="p">=</span> <span class="n">TimeZone</span><span class="p">.</span><span class="kd">init</span><span class="p">(</span><span class="n">abbreviation</span><span class="p">:</span> <span class="s">&quot;GMT&quot;</span><span class="p">)</span>
+        <span class="kd">var</span> <span class="nv">myComponents</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span><span class="k">in</span><span class="p">:</span> <span class="n">tz</span><span class="p">!,</span> <span class="n">from</span><span class="p">:</span> <span class="kc">self</span><span class="p">)</span>
+        <span class="n">myComponents</span><span class="p">.</span><span class="n">hour</span> <span class="p">=</span> <span class="mi">12</span>
+        <span class="n">myComponents</span><span class="p">.</span><span class="n">minute</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="n">myComponents</span><span class="p">.</span><span class="n">second</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="kd">var</span> <span class="nv">otherComponents</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span><span class="k">in</span><span class="p">:</span> <span class="n">tz</span><span class="p">!,</span> <span class="n">from</span><span class="p">:</span> <span class="n">other</span><span class="p">)</span>
+        <span class="n">otherComponents</span><span class="p">.</span><span class="n">hour</span> <span class="p">=</span> <span class="mi">12</span>
+        <span class="n">otherComponents</span><span class="p">.</span><span class="n">minute</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="n">otherComponents</span><span class="p">.</span><span class="n">second</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">abs</span><span class="p">(</span>
+            <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span>
+                <span class="p">[.</span><span class="n">day</span><span class="p">],</span>
+                <span class="n">from</span><span class="p">:</span> <span class="n">otherComponents</span><span class="p">,</span>
+                <span class="n">to</span><span class="p">:</span> <span class="n">myComponents</span>
+            <span class="p">).</span><span class="n">day</span><span class="p">!</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>We normalized both timestamps by setting the timezone to GMT and time components to 12 Noon of the given dates. Let’s test this improved code with <a class="reference internal" href="#test-code-one"><span class="std std-ref">Testing sample 02</span></a> again:</p>
+<p>Now, the output is,</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Date <span class="m">1</span>: <span class="m">2020</span>-08-21 <span class="m">18</span>:25:00 +0000 and Date <span class="m">2</span>: <span class="m">2020</span>-08-23 <span class="m">18</span>:24:00 +0000
+Distance in days: <span class="m">2</span>
+
+Date <span class="m">2</span>: <span class="m">2020</span>-08-23 <span class="m">18</span>:24:00 +0000 and Date <span class="m">3</span>: <span class="m">2020</span>-08-24 <span class="m">18</span>:23:00 +0000
+Distance in days: <span class="m">1</span>
+</pre></div>
+</div>
+<p>We have made it right this time? Seems so. But wait, let’s check again with another example:</p>
+</div>
+<div class="section" id="testing-sample-03">
+<span id="test-code-two"></span><h3>Testing sample 03<a class="headerlink" href="#testing-sample-03" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span> <span class="nv">date4</span> <span class="p">=</span> <span class="n">Date</span><span class="p">(</span><span class="n">timeIntervalSince1970</span><span class="p">:</span> <span class="mf">1597257913.450566</span><span class="p">)</span>
+<span class="kd">let</span> <span class="nv">date5</span> <span class="p">=</span> <span class="n">Date</span><span class="p">(</span><span class="n">timeIntervalSince1970</span><span class="p">:</span> <span class="mf">1597346178.289075</span><span class="p">)</span>
+
+<span class="bp">print</span><span class="p">(</span><span class="s">&quot;Distance between date 4(</span><span class="si">\(</span><span class="n">date4</span><span class="si">)</span><span class="s">) &amp; date 5 (</span><span class="si">\(</span><span class="n">date5</span><span class="si">)</span><span class="s">): </span><span class="si">\(</span><span class="n">date4</span><span class="p">.</span><span class="n">distanceInDays</span><span class="si">(</span><span class="n">from</span><span class="p">:</span> <span class="n">date5</span><span class="si">))</span><span class="s">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Output is,</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>Distance between date <span class="m">4</span> <span class="o">(</span><span class="m">2020</span>-08-12 <span class="m">18</span>:45:13 +0000<span class="o">)</span> <span class="p">&amp;</span> date <span class="m">5</span> <span class="o">(</span><span class="m">2020</span>-08-13 <span class="m">19</span>:16:18 +0000<span class="o">)</span>: <span class="m">0</span>
+</pre></div>
+</div>
+<p>Given dates are on Aug 12 and Aug 13, we expect the distance to be 1 day, but our function returns 0. This error may occur, even when you are not initiating dates as in the last example. Swift stores <code class="docutils literal notranslate"><span class="pre">Date</span></code> instances internally as a float that represents the seconds elapsed since Jan 01 2001 00:00:00 GMT. So even a difference of a few milliseconds may result in this unexpected behaviour. One solution to this is to add one second to the bigger normalized timestamp. We update our code again as follows:</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">extension</span> <span class="nc">Date</span> <span class="p">{</span>
+    <span class="c1">// Return distance between corresponding days, ignoring the time components.</span>
+    <span class="kd">func</span> <span class="nf">distanceInActualDaysWithBugfix</span><span class="p">(</span><span class="n">from</span> <span class="n">other</span><span class="p">:</span> <span class="n">Date</span><span class="p">)</span> <span class="p">-&gt;</span> <span class="nb">Int</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nv">tz</span> <span class="p">=</span> <span class="n">TimeZone</span><span class="p">.</span><span class="kd">init</span><span class="p">(</span><span class="n">abbreviation</span><span class="p">:</span> <span class="s">&quot;GMT&quot;</span><span class="p">)</span>
+        <span class="kd">var</span> <span class="nv">myComponents</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span><span class="k">in</span><span class="p">:</span> <span class="n">tz</span><span class="p">!,</span> <span class="n">from</span><span class="p">:</span> <span class="kc">self</span><span class="p">)</span>
+        <span class="n">myComponents</span><span class="p">.</span><span class="n">hour</span> <span class="p">=</span> <span class="mi">12</span>
+        <span class="n">myComponents</span><span class="p">.</span><span class="n">minute</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="n">myComponents</span><span class="p">.</span><span class="n">second</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="kd">var</span> <span class="nv">otherComponents</span> <span class="p">=</span> <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span><span class="k">in</span><span class="p">:</span> <span class="n">tz</span><span class="p">!,</span> <span class="n">from</span><span class="p">:</span> <span class="n">other</span><span class="p">)</span>
+        <span class="n">otherComponents</span><span class="p">.</span><span class="n">hour</span> <span class="p">=</span> <span class="mi">12</span>
+        <span class="n">otherComponents</span><span class="p">.</span><span class="n">minute</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="n">otherComponents</span><span class="p">.</span><span class="n">second</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="c1">// Always add 1 second to the bigger date to compensate for possible loss of milliseconds.</span>
+        <span class="k">if</span> <span class="p">(</span><span class="kc">self</span> <span class="o">&gt;</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">myComponents</span><span class="p">.</span><span class="n">second</span> <span class="p">=</span> <span class="mi">1</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="kc">self</span> <span class="o">&lt;</span> <span class="n">other</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">otherComponents</span><span class="p">.</span><span class="n">second</span> <span class="p">=</span> <span class="mi">1</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="bp">abs</span><span class="p">(</span>
+            <span class="n">Calendar</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">dateComponents</span><span class="p">(</span>
+                <span class="p">[.</span><span class="n">day</span><span class="p">],</span>
+                <span class="n">from</span><span class="p">:</span> <span class="n">otherComponents</span><span class="p">,</span>
+                <span class="n">to</span><span class="p">:</span> <span class="n">myComponents</span>
+            <span class="p">).</span><span class="n">day</span><span class="p">!</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Run above testing samples, <a class="reference internal" href="#test-code-one"><span class="std std-ref">Testing sample 02</span></a> and <a class="reference internal" href="#test-code-two"><span class="std std-ref">Testing sample 03</span></a> again and you can see that we get the expected results now.</p>
+</div>
+</div>
+<div class="section" id="extra-serving">
+<h2>Extra serving<a class="headerlink" href="#extra-serving" title="Permalink to this headline">¶</a></h2>
+<p>If we want to get timestamps in local time, we can add the following function also to the above <code class="docutils literal notranslate"><span class="pre">Date</span></code> extension:</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="kd">func</span> <span class="nf">localDate</span><span class="p">()</span> <span class="p">-&gt;</span> <span class="n">Date</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kc">self</span><span class="p">.</span><span class="n">addingTimeInterval</span><span class="p">(</span>
+        <span class="n">TimeInterval</span><span class="p">(</span><span class="n">TimeZone</span><span class="p">.</span><span class="n">current</span><span class="p">.</span><span class="n">secondsFromGMT</span><span class="p">())</span>
+    <span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Dev Life Musings</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Day 1: Distance in days between Dates in Swift</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#a-short-ode-to-python-before-we-start">A (short) Ode to Python before we start ;)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#back-to-the-swift-land">Back to the Swift land</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extra-serving">Extra serving</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="post00.html">Day 0: Set up a blog using Sphinx and Github Pages</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Dev Life Musings</a></li>
+      <li>Next: <a href="post00.html" title="next chapter">Day 0: Set up a blog using Sphinx and Github Pages</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Rajeesh Punathil.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/post01.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
