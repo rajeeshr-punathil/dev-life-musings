@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day 2: Prevent sleeping of macOS or iOS device in Swift</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Day 1: Distance in days between Dates in Swift" href="post01.html" />
+    <link rel="prev" title="Dev Life Musings" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="day-2-prevent-sleeping-of-macos-or-ios-device-in-swift">
+<h1>Day 2: Prevent sleeping of macOS or iOS device in Swift<a class="headerlink" href="#day-2-prevent-sleeping-of-macos-or-ios-device-in-swift" title="Permalink to this headline">¶</a></h1>
+<p><em>Date</em> : <strong>23 Aug 2020</strong></p>
+<p><em>Topics</em> : <code class="docutils literal notranslate"><span class="pre">Swift</span></code>, <code class="docutils literal notranslate"><span class="pre">macOS</span></code>, <code class="docutils literal notranslate"><span class="pre">iOS</span></code></p>
+<p>Our swift app may sometimes need to prevent the idle-sleep behaviour of the device it runs on. To do this in iOS is very simple, we just need to write a single line of code. Then after performing the task, we can restore the original behaviour by running another single line code. This is possible in macOS too, only that our solution is a little longer to write, but still simple. The following example code deals with both macOS and iOS. Code is self-explanatory:</p>
+<div class="highlight-swift notranslate"><div class="highlight"><pre><span></span><span class="cm">/* 1. Place the following import lines where all other imports are. */</span>
+<span class="cp">#if</span> <span class="cp">os</span><span class="p">(</span><span class="cp">macOS</span><span class="p">)</span>
+    <span class="kd">import</span> <span class="nc">IOKit</span>
+    <span class="kd">import</span> <span class="nc">IOKit</span><span class="p">.</span><span class="nc">pwr_mgt</span>
+<span class="cp">#endif</span>
+
+<span class="cm">/* 2. Place the following line where the variable declarations are. */</span>
+<span class="cp">#if</span> <span class="cp">os</span><span class="p">(</span><span class="cp">macOS</span><span class="p">)</span>
+    <span class="p">@</span><span class="n">State</span> <span class="kd">var</span> <span class="nv">preventSleepID</span><span class="p">:</span> <span class="n">IOPMAssertionID</span> <span class="p">=</span> <span class="mi">0</span>
+<span class="cp">#endif</span>
+
+<span class="cm">/* 3. The sleep-preventing function. */</span>
+<span class="kd">func</span> <span class="nf">preventSleep</span><span class="p">()</span> <span class="p">{</span>
+    <span class="cp">#if</span> <span class="cp">os</span><span class="p">(</span><span class="cp">iOS</span><span class="p">)</span>
+        <span class="bp">UIApplication</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">isIdleTimerDisabled</span> <span class="p">=</span> <span class="kc">true</span>
+    <span class="cp">#else</span> <span class="k">if</span> <span class="cp">os</span><span class="p">(</span><span class="cp">macOS</span><span class="p">)</span>
+        <span class="kd">let</span> <span class="nv">reasonForActivity</span> <span class="p">=</span> <span class="s">&quot;DESCRIBE WHY APP NEEDS TO PREVENT SLEEP IN SIMPLE WORDS.&quot;</span> <span class="k">as</span> <span class="n">CFString</span>
+        <span class="kd">let</span> <span class="nv">preventSleep</span> <span class="p">=</span> <span class="n">IOPMAssertionCreateWithName</span><span class="p">(</span>
+            <span class="c1">// To prevent display-sleep, use kIOPMAssertionTypeNoDisplaySleep below.</span>
+            <span class="n">kIOPMAssertionTypeNoIdleSleep</span> <span class="k">as</span> <span class="n">CFString</span><span class="p">,</span>
+            <span class="n">IOPMAssertionLevel</span><span class="p">(</span><span class="n">kIOPMAssertionLevelOn</span><span class="p">),</span>
+            <span class="n">reasonForActivity</span><span class="p">,</span>
+            <span class="p">&amp;</span><span class="n">preventSleepID</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">preventSleep</span> <span class="o">!=</span> <span class="n">kIOReturnSuccess</span> <span class="p">{</span>
+            <span class="bp">print</span><span class="p">(</span><span class="s">&quot;Idle-sleep could not be prevented. System may go to sleep midway.&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="cp">#endif</span>
+<span class="p">}</span>
+
+<span class="cm">/* 4. The function that restores sleep behaviour. */</span>
+<span class="kd">func</span> <span class="nf">restoreSleep</span><span class="p">()</span> <span class="p">{</span>
+    <span class="cp">#if</span> <span class="cp">os</span><span class="p">(</span><span class="cp">iOS</span><span class="p">)</span>
+        <span class="bp">UIApplication</span><span class="p">.</span><span class="n">shared</span><span class="p">.</span><span class="n">isIdleTimerDisabled</span> <span class="p">=</span> <span class="kc">false</span>
+    <span class="cp">#else</span> <span class="k">if</span> <span class="cp">os</span><span class="p">(</span><span class="cp">macOS</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">preventSleepID</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">{</span>
+            <span class="n">IOPMAssertionRelease</span><span class="p">(</span><span class="n">preventSleepID</span><span class="p">)</span>
+            <span class="n">preventSleepID</span> <span class="p">=</span> <span class="mi">0</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="bp">print</span><span class="p">(</span><span class="s">&quot;Idle-sleep Already restored?&quot;</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="cp">#endif</span>
+<span class="p">}</span>
+
+<span class="cm">/* 5. A sample function that invokes preventSleep */</span>
+<span class="kd">func</span> <span class="nf">startTask</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Do other things and then..</span>
+    <span class="n">preventSleep</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="cm">/* 6. A sample function that invokes restoreSleep after finishing the task. */</span>
+<span class="kd">func</span> <span class="nf">finishTask</span><span class="p">()</span> <span class="p">{</span>
+    <span class="c1">// Do things that finishes the task and then..</span>
+    <span class="n">restoreSleep</span><span class="p">()</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Dev Life Musings</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Day 2: Prevent sleeping of macOS or iOS device in Swift</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post01.html">Day 1: Distance in days between Dates in Swift</a></li>
+<li class="toctree-l1"><a class="reference internal" href="post00.html">Day 0: Set up a blog using Sphinx and Github Pages</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Dev Life Musings</a></li>
+      <li>Next: <a href="post01.html" title="next chapter">Day 1: Distance in days between Dates in Swift</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Rajeesh Punathil.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/post02.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

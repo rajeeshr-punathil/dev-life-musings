@@ -14,6 +14,7 @@ Dev Life Musings
 
    post00
    post01
+   post02
 
 Indices and tables
 ==================
